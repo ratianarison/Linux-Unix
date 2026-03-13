@@ -1,0 +1,24 @@
+# Fichiers temporaires
+*.tmp
+*.log
+*.bak
+*.swp
+*.~
+
+# Fichiers de configuration sensibles 
+*password*
+*secret*
+*.key
+*.pem
+*.crt
+
+# Dossiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers de cache
+.cach/
+*.pyc
+__pychache__/
+
