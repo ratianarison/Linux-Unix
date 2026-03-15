@@ -189,10 +189,101 @@ Ajouté sur toutes les machines :
 
 ### Fichier <mark>*/etc/ypserv.conf*</mark>
 
-Le fichier <mark>/etc/ypserv.conf</mark> est le fichier de configuration principal du serveur NIS (ypserv). Il contrôle le comportement du serveur NIS et définit les règles de sécurité pour l'accès aux maps NIS.
+Le fichier */etc/ypserv.conf* est le fichier de configuration principal du serveur NIS. Il contrôle le comportement du serveur NIS et définit les règles de sécurité pour l'accès aux maps NIS.
+
+Avant de modifier ce fichier, il est préférable de voir le manuel ypserv.conf(5)
+
+  ```bash
+  man ypserv.conf
+  ```
+
+  ```markdown
+  YPSERV.CONF(5)                NIS Reference Manual               YPSERV.CONF(5)
+
+  NAME
+    ypserv.conf - configuration file for ypserv and rpc.ypxfrd
+
+  DESCRIPTION
+    ypserv.conf is an ASCII file which contains some options for ypserv. It also contains a list
+    of rules for special host and map access for ypserv and rpc.ypxfrd. This file will be read by
+    ypserv and rpc.ypxfrd at startup, or when receiving a SIGHUP signal.
+
+    There is one entry per line. If the line is a option line, the format is :
+
+          option: argument
+
+    The line for an access rule has the format :
+
+          host:domain:map:security
+
+    All rules are tried one by one. If no match is found, access to a map is allowed.
+
+    Following options exist :
+
+          files: 30
+    This option specifies, how many database files should be cached by ypserv. If 0 specified, caching is disabled.
+    Decreasing this number is only possible, if ypserv is restarted.
+
+          trusted_master: server
+
+    If this options is set on a slave server, new maps from the host server will be accepted as master. The default
+    is, that no trusted master is set and new maps will not be accepted.
+
+    Example :
+
+          trusted_master: master.tp.local
+
+          slp: [yes|<no>|domain]
+    If this option is enabled and SLP supported compiled in, the NIS server registers on a SLP server. If the variable
+    is set to domain, an attribute domain with a comma separated list of supported domainnames is set. Else this
+    attribute will not be set. The default is "no" (disabled). (SLP : Service Location Protocol)
+
+          xfr_check_port: [<yes>|no]
+    With this option enabled, the NIS master server have to run on a port < 1024. The default is "yes" (enabled)
+
+    The field descriptions for the access rule lines are :
+
+          host
+    IPv4 only address. Wildcards are allowed. This rules are ignored for IPv6, which means it is better to not use
+    this option at all anymore
+
+          Examples :
+                131.234. = 131.234.0.0/255.255.0.0
+                131.234.214.0/255.255.254.0
+
+          domain
+    specifies the domain, for which this rule should be applied. AN asterix as wildcard is allowed.
+
+          map
+    name of the map, or asterisk for all maps.
+
+          security
+    one of none, port, deny :
+
+    none : always allows access
+    port : allow access if from port 1024. Otherwise do not allow access.
+    deny : deny access to this map
+
+  ```
+
+**Configuration générale**
 
   ```bash
   sudo nano /etc/ypserv.conf
   ```
 
+  ```bash
   
+  ```
+
+**Vérification et chargement** :
+
+  ```bash
+  # Redémarrer le service
+  sudo systemctl restart ypserv
+
+  # vérifier les logs
+  sudo journalctl -u ypserv -f
+  #ou
+  sudo tail -f /var/log/syslog | grep ypserv
+  ```
