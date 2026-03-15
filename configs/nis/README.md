@@ -669,3 +669,164 @@ GROUP: $(YPSRCDIR)/passwd
 
 ### Sur Debian-Client
 
+  ```bash
+  # Installation
+  sudo apt update && sudo apt upgrade
+  sudo apt install nis rpcbind yp-tools
+
+  # Configuration hosts
+  sudo nano /etc/hosts
+  # Ajouter les entrées des serveurs
+
+  # Configuration /etc/host.conf
+  # order hosts,nis,bind
+
+  # Configuration nsswitch.conf
+  sudo nano /etc/nsswitch.conf
+  # Ajouter les entrées des servuers
+  ```
+
+## 1.10. Lancement du service NIS côté client
+
+  ```bash
+  # 1. Vérification de host.conf
+  cat /etc/host.conf
+
+  # 2. Vérification de nsswitch.conf
+  cat /etc/host.conf
+
+  # 3. Editer le fichier de configuration client
+  sudo nano /etc/yp.conf
+  ```
+
+  ```text
+  # Spécifier les serveurs NIS (utiliser des IP de préférence)
+  domain TP-NIS server master.tp.local
+  domain TP-NIS server slave.tp.local
+  ypserver 192.168.1.10
+  ypserver 192.168.1.11
+  ```
+
+  ```bash
+  # 4. Relancer le réseau (optionnel)
+  sudo systemctl restart networking
+
+  # 5. Lancer le service client
+  sudo systemctl start ypbind
+  sudo systemctl enalble ypbind
+
+  # 6. Vérifier le fonctionnement
+  ypwhich   # return master.tp.local
+  ypcat passwd    # Voir la base passwd
+  ypcat group    # voir la base group
+  getent passwd   # voir tous les utilisateurs (clients locaux + NIS)
+  getent group    # voir tous les groupes
+  ```
+
+ ## 1.11. Sécurité NIS
+
+ ⚠️ NIS n'est pas un protocole très sécurisé
+
+ ### Recommandations de sécurité
+
+ 1. **Utilisation en réseau local uniquement**
+    - Notre configuration en 192.168.1.0/24 est appropriée
+    - Accès à Internet via une passerelle sécurisée
+      
+ 2. **Restriction des accès avec /etc/ypserv.conf**
+
+    ```bash
+    sudo nano /etc/ypserv.conf
+    ```
+    ```text
+    # Ne permettre que le réseau local
+    192.168.1.0/255.255.255.0:*:*:none
+    *:*:*:deny
+
+    # Protection spéciale pour le shadow
+    0.0.0.0/0:*:shadow.byname:port
+    0.0.0.0/0:*:shadow.byuid:port
+    ```
+  3. **Utilisation du fichier /var/yp/securenets**
+
+<details>
+  <summary>Qu'est ce que le fichier /var/yp/securenets</summary>
+
+  C'est un fichier de configuration qui limite les accès au serveur NIS. Il permet de spécifier quels réseaux ou quelles machines peuvent interroger le serveur NIS.
+
+  **Problème de sécurité sans securenets**
+
+  Si le fichier /var/yp/securenets est absent ou vide, le serveur NIS répond à TOUTES les requêtes, de n'importe quelle machine, sur n'importe quel réseau. Cela signifie que n'importe qui, avec la connaissance du nom de domaine NIS pourrait :
+  - Récupérer toute la base d'utilisateurs (ypcat passwd)
+  - Obtenir la liste des mots de passe chiffrés
+  - Cartographier le réseau
+
+  **Format du fichier**
+
+  Le fichier /var/yp/securenets a un format très simple :
+
+  ```bash
+  # Commentaire : masque_réseau adresse_réseau
+  255.255.255.0 192.168.1.0  # Autorise tout le réseau 192.168.1.0/24
+  host      192.168.1.50  # Autorise uniquement cette machine spécifique
+  ```
+
+  Deux formats possibles :
+
+  1. Masque + réseau : Pour autoriser tout un sous réseau
+  2. host + IP : Pour autoriser une machine spécifique
+
+</details>
+
+# 🧪 Tests et Validation
+
+## Script de test complet : 
+
+```bash
+#!/bin/bash
+#
+# test-nis.sh - Script de validation NIS
+
+echo "=== TEST NIS=="
+echo "Date: $(date)"
+echo "Machine: $(hostname)"
+echo
+
+echo "1. Vérification du domaine NIS"
+nisdomainname
+echo
+
+echo "2. Vérification des services RPC"
+rpcinfo -p localhost | grep yp
+echo
+
+echo "3. Serveur NIS actif :"
+ypwhich
+echo
+
+echo "4. Maps disponible"
+ypcat -x
+echo
+
+echo "5. Condenu de passwd (premiers 5): "
+ypcat passwd 2> /dev/null | head -5
+echo
+
+echo "6. Test utilisateur NIS"
+if getent passwd | grep -q "tesuser"; then
+  echo "✅ Utilisateur testuser trouvé"
+else
+  echo "❌ Utilisateur testuser non trouvé"
+fi
+  echo
+
+echo "7. Synchronisation maître-esclave"
+if["$(hostname)"="master"]; then
+  echo "Sur le maître"
+  ls -la /var/yp/TP-NIS/ | head -3
+elif["$(hostname)"="slave"]; then
+  echo "Sur l'esclave"
+  ls -la /var/yp/TP-NIS/ | head -3
+  echo "Diff avec maître ? Les dates doivent être proches"
+fi
+```
