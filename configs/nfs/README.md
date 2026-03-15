@@ -78,3 +78,45 @@ NFS (Network File System) est un système de fichiers réseau qui fournit un acc
 ## 2.5. Configuration du serveur NFS 
 
 ### Fichier <mark>/etc/exports</mark> 
+
+<details>
+  
+  <summary>Qu'est-ce que le fichier /etc/exports</summary>
+
+
+  Le fichier <mark>/etc/exports</mark> est le fichier de configuration principal du serveur NFS. Il définit quels répertoires sont partagés, avec quels clients, et avec quelles options de securité/permissions.
+
+  ### Structure d'une ligne**
+
+  ```bash
+  # Format général
+  /response/to/share  client1(options) client2(options) ...
+
+  # Exemple :
+  /home/nfs  192.168.1.0/24(rw,syn,no_subtree_check) *.tp.local(ro)
+  ```
+
+  ### Options courantes**
+
+   Option | Type | Description 
+   -------|------|-------------
+   ro | accès | Read-Only : accès en lecture seule
+   rw | accès | Read-Write : accès en lecture/écriture
+   sync | comportement | Les écritures sont synchronisées
+   async | comportement | Écritures asynchrones 
+   no_subtree_check | comportement | Désactive la vérification des sous-arborescences
+   subtree_check | comportement | Active la vérification
+   root_squash | sécurité | Transforme l'UID root (0) en nobody (65534)
+   no_root_squash | sécurité | Les accès root restent root
+   all_squash | sécurité | Convertit tous les UID/GID en anonymes
+   anonuid=xxx | sécurité | Spécifie l'UID pour les users anonymes
+   anongid=xxx | sécurité | Spécifie le GID pour les users anonymes
+   secure | network | Restreint les connexions aux ports < 1024 (par défaut)
+   insecure | network | Autorise les connexions depuis des ports > 1024
+
+</details>
+
+   ```bash
+   sudo nano /etc/exports
+   ```
+   ```text
