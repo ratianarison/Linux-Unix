@@ -1,142 +1,421 @@
+# DNS (Domain Name System)
 
-# PARTIE 3 : MISE EN PLACE DNS (Domain Name System)
 
-## 3.1. Présentation du DNS 
+## 📌 Définition
 
-<details>
-  <summary><b>Le DNS (Domain Name System)</b></summary>
+Le DNS est un service fondamental d'Internet qui traduit les noms de domaine (comme google.com) en adresses IP (comme 142.250.178.46). 
 
-  Le DNS (Domain Name System) est un service fondamental d'Internet qui traduit les noms de domaine (comme google.com) en adresses IP (comme 142.250.178.46).
-  C'est un système de nommage par base de données répartie.
 
-  ### 🌐 Principe de base 
+## 🌐 Principes de base
 
-  **Sans DNS**
+**Sans DNS**
 
-  ```bash
-  # Pour accéder à un site, il faudrait retenir :
-  ping 142.250.178.46
-  ssh 192.168.1.10 # le serveur master
-  ```
-  
-  **Avec DNS**
+```bash
+# Pour accéder à un site, il faudrait retenir :
+ping 142.250.178.46
+ssh 142.250.178.46
+```
 
-  ```bash
-  # On utilise des noms faciles à retenir :
-  ping google.com
-  ssh user@master.tp.local
-  ```
+**Avec DNS**
 
-  ### 🏗️ Architecture de DNS
+```bash
+# On utilise des doms faciles à retenir :
+ping google.com
+ssh master.tp.local
+```
 
-  #### 1. Architecture hiérarchique
+## Architecture du DNS
 
-  ```text
-  Racine (.)
-    ├── .com (domaine de premier niveau - TLD)
-    │     ├── google.com
-    │     ├── amazon.com
-    │     └── example.com
-    ├── .org
-    │     └── wikipedia.org
-    ├── .fr
-    │     ├── google.fr
-    │     └── education.gouv.fr
-    └── .local (domaine privé)
-          └── tp.local
-                ├── master.tp.local
-                ├── slave.tp.local
-                └── client.tp.local
-  ```
+```text
+DNS a une structure hiérarchique définie comme suit :
 
-  #### 2. Types de serveurs DNS**
+Root (.)
+.
+├────  .com ( Domaine de primier niveau - TLD)
+|       ├── google.com  (domaine de deuxième niveau)
+|            ├── mail.google.com (FQDN)
+|       ├── amazon.com
+|       ├── example.com
+├────  .org
+|       ├── wikipedia.org
+├────  .local
+        ├── tp.local
+             ├── master.tp.local  (FQDN)
+```
 
-  **Les 4 types principaux de serveurs DNS**
+## 📚 Notions Importantes
 
-  ***1. Serveur Racine (Root Server)***
+### 1. FQDN (Full Qualified Domain Name)
 
-  Ce sont les serveurs les plus élevés dans la hiérarchie DNS. Il y a 13 adresses IP de serveurs racines (nommées de <mark>a.root-servers.net</mark> à <mark>m.root-servers.net</mark>, gérés par 12 organisations différentes.
-  Tous ces serveurs partagent le même fonction critique : ils constituent la première étape de la résolution de noms sur Internet. Lorsqu'un résolveur DNS ne connaît pas l'adresse d'un domaine, il interroge l'un de ces serveurs racines qui le redirige vers le serveur faisant autorité pour l'extension concernée (TLD).
+Le FQDN est le nom de domaine complet et unique d'une machine sur Internet. Il comprend tous les éléments de la hiérarchie DNS, du nom d'hôte jusqu'à la racine.
 
-  | Identifiant | Organisation responsable | Localisation principale | Adresse IPv4 | Adresse IPv6 |
-  |-------------|--------------------------|-------------------------|--------------|--------------|
-  | A (a.root-servers.net) | Verisign, Inc | Virginie, USA | 198.41.0.4 | 2001:503:ba3e::2:30 |
-  | B (b.root-servers.net) | USC-ISI (Information Science Institute) | Californie, USA | 199.9.14.201 | 2001:500:200::b |
-  | C (c.root-servers.net) | Cogent Communications | Virginie, USA | 192.33.4.12 | 2001:500:2::c
-  | D (d.root-servers.net) | University of Maryland | Maryland, USA | 199.7.91.13 | 2001:500:2d::d
-  | E (e.root-servers.net) | NASA (Ames Research Center) | Californie, USA | 192.203.230.10 |	2001:500:a8::e
-  | F (f.root-servers.net) | ISC (Internet Systems Consortium, Inc.) | Palo Alto, USA | 192.5.5.241 | 2001:500:2f::f
-  | G (g.root-servers.net) | U.S. Departement of Defense | Ohio, USA | 192.112.36.4 | 2001:500:12::d0d 
-  | H (h.root-servers.net) | U.S. Army (U.S. Army Research Laboratory) | Maryland, USA | 198.97.190.53 | 2001:500:1::53
-  | I (i.root-servers.net) | Netnod (Autonomical) | Stockholm, Suède | 192.36.148.17 | 2001:7fe::53
-  | J (j.root-servers.net) | Verisign, Inc. | Virginie, USA | 192.58.128.30 | 2001:503:c27::2:30
-  | K (k.root-servers.net) | RIPE NCC | Amsterdam, Pays-Bas | 193.0.14.129 | 2001:7fd::1
-  | L (l.root-servers.net) | ICANN | Californie, USA | 199.7.83.42 | 2001:500:9f::42
-  | M (m.root-servers.net) | WIDE Project | Tokyo, Japon | 202.12.27.33 | 2001:dc3::35
+**Format :** 
 
-  Bien qu'il n'y a que 13 adresses IP (de A à M), il existe en réalité des centaines de serveurs physiques répartis mondialement grâce à la technologie <mark>anycast</mark>. Cela permet à un utilisateur en France d'interroger une instance du serveur "K" située physiquement en Europe plutôt qu'aux Pay-Bas.
+```text
+[hostname].domain.[tld].     ← Point final important
+```
 
-  
-  *Le fichier "Root Hints**
+**Exemples :**
 
-  Ces 13 adresses sont répertoriées dans un petit fichier texte appelé <b>named.cache</b> (ou root hints). C'est le bottin de base que tout serveur DNS télécharge au démarrage pour savoir à qui parler en premier.
-  
-  ***Serveur TLD (Top Level Domain)***
+```bash
+# FQDN valides
+google.com.    # Le point final représente la racine
+www.google.com.
+mail.google.com.
+ftp.example.org.
 
-  Le serveur TLD est l'étape juste après le root-servers dans la hiérarchie du DNS. C'est lui qui gère une extension spécifique (comme .com, .fr, .net).
+# Dans le projet :
+master.tp.local    # FQDN du serveur
+slave.tp.local
+client.tp.local
+```
 
-  - Un serveur TLD pour chaque extension (.com, .net, .org, .fr, etc.)
-  - Connaissent les serveurs faisant autorité pour chaque domaine de leur extension
-  - Gérés par des registres (Verisign pour .comme, AFNIC pour .fr)
+### 2. Domaine
 
-  Si le serveur racine est le réceptionniste qui indique quel département aller voir, le serveur TLD est le chef du département. Il connaît l'emplacement exact de tous les noms de domaines enregistrés sous son extension.
+Un domaine est un espace de noms dans l'arbre DNS. C'est un regroupement logique de machines sous une même autorité administrative.
 
-  Il existe deux types de TLD : 
+**Hiérarchie des domaines**
 
-  - gTLD (Generic) : Les extensions générales comme .com, .org, .edu, .gov, .net
-  - ccTLD (Country Code) : les extensions liées à un pays comme .fr (France), .be (belgique), .ca (Canada), .mg (Madagascar)
+```bash
+.                          # Racine
+├── com                    # Domaine de premier niveau (TLD)
+│   ├── google             # Domaine de deuxième niveau
+│   │   ├── mail           # Sous-domaine
+│   │   ├── drive
+│   │   └── calendar
+│   └── amazon
+├── org
+│   └── wikipedia
+└── fr                      # TLD national
+    ├── google
+    ├── amazon
+    └── education
+        └── univ-paris      # Sous-domaine
+```
 
-  
+**Types de domaines**
 
-  ### 📝 Types d'enregistrement
+Domaine de premier niveau (TLD)
 
-  ```bash
-  #Enregistrements courants :
+```bash
+.com    # commercial
+.org    # organisation
+.net    # network
+.fr     # France
+.mg     # Madagascar
+.local  # Privé
+```
 
-  A → 192.168.1.10    # Adresse IPv4
-  AAAA → 2001:db8::1  # Adresse IPv6
-  CNAME → www → example.com  # Alias (canonical name)
-  MX → mail.example.com      # Serveur de mail
-  NS → ns1.example.com       # Serveur de noms (Name Server)
-  PTR → 10.1.168.192.in-addr.arpa   # Résolution inverse (IP → nom)
-  TXT → "v=spf1 include:_spf.google.com"   # Texte (SPF, vérifications)
-  SOA → ...    # Start of Authority (information de zone)
-  ```
+Domaine de deuxième niveau
 
-  ### 🔄 Fonctionnement d'une requête DNS
+```bash
+google.com    # Google dans le .com
+amazon.fr     # Amazon dans le .fr
+tp.local      # Le projet TP dans .local
+```
 
-  Quand on tape <mark>google.com</mark> :
+Sous domaine 
 
-  ```bash
-  1. Le PC consulte le cache local
-  2. Si pas en cache -> demande au resolver (ex : 8.8.8.8)
-  3. Le resolver demande aux serveurs racines
-  4. Racine indique : "demandez au serveurs .com"
-  5. Serveurs .com indique : "demandez aux serveurs de google.com"
-  6. Serveurs de google.com donnent l'IP
-  7. Resolver retourne l'IP au PC
-  8. Le PC se connecte à l'IP
-  ```
+```bash
+mail.google.com      # Service mail de google
+drive.google.com     # Service drive de google
+master.tp.local      # le serveur dans le domaine principal tp.local
+```
 
-  ### 📓 Notions importantes 
+### 3. Zone
 
-  | Terme | Description | Exemple |
-  |-------|-------------|---------|
-  | FQDN | Fully Qualified Domain Name (nom absolu) | master.tp.local |
-  | Domaine | Sous-arbre de l'espace de nommage | tp.local |
-  | Zone | Partie du domaine gérée par un serveur | zone tp.local |
-  | Délegation | Transfert d'autorité à un sous-domaine | paris.tp.local délégué |
+Une zone est une portion de l'arbre DNS qui est gérée par une même entité andministrative. C'est l'unité de délégation et de configuration.
 
-  
-  
-</details>
+Domaine : Concept hiérarchique
+Zone : Portion du domaine gérée par un serveur
+
+**Exemple de zone**
+
+```bash
+
+; Fichier de zone pour tp.local
+$ORGIN tp.local
+$TTL 86400
+
+@ IN SOA master.tp.local. admin.tp.local. (
+  2024031901 ; Serial
+  3600 ; Refresh
+  1800 ; Retry
+  604800 ; Expire
+  86400; Minimum
+
+; Serveurs de noms pour cette zone
+
+  IN NS master.tp.local.
+  IN NS slave.tp.local.
+
+; Entregistrement dans la zone
+  master IN A 192.168.1.10
+  slave IN A 192.168.1.11
+  client IN A 192.168.1.12
+```
+
+**Types de zones**
+
+Zones primaires (master)
+
+```bash
+# Fichier modifiable manuellement
+/var/lib/bind/tp.local.hosts
+```
+
+Zones Secondaires (slave)
+
+```bash
+# Copie automatique depuis le master
+/var/lib/bind/tp.local.hosts  # read-only
+```
+
+Zone directe
+
+```bash
+# Nom - IP
+tp.local 192.168.1.10
+```
+
+Zone inverse
+
+```bash
+# IP → Nom (pour la résolution inverse)
+192.168.1.10 master.tp.local
+```
+
+### 4. Délégation
+
+La délégation est le mécanisme par lequel un serveur DNS transmet l'autorité pour une partie de l'arbre DNS à un autre serveur.
+
+**Principe**
+
+```bash
+                  Root Server
+                        ↓ Délégue .com à Verisign
+                  Serveurs .com
+                        ↓ Délègue google.com à Google
+                  Serveurs google.com (Google)
+                        ↓ Délègue mail.google.com (optionnel)
+                  Serveurs mail.google.com
+```
+
+**Comment ça marche techniquement**
+
+1. Enregistrements NS dans la zone parente
+
+```bash
+; Dans la zone .com
+google.com. IN NS ns1.google.com
+google.com. IN NS ns2.google.com
+```
+
+2. Enregistrements "glue" (A)
+
+```bash
+; Dans la zone .com (nécessaire si le serveur est dans le domaine déléqué)
+ns1.google.com. IN A 216.239.32.10
+ns2.google.com. IN A 216.239.34.10
+```
+
+**Exemple de délégation (projet)**
+
+Si on a un domaine public tp.com
+
+```bash
+; Dans la zone .com (gérée par Verisign)
+tp.com IN NS master.tp.com.
+tp.com IN NS slave.tp.com.
+
+; Glue records (car master.tp.com est DANS tp.com)
+master.tp.com. IN A 192.168.1.10
+slave.tp.com. IN A 192.168.1.11
+```
+
+Puis dans la zone locale 
+
+```bash
+; Sur le serveur master.tp.local (zone tp.com)
+$ORIGIN tp.com.
+
+@ IN SOA master.tp.local. admin.tp.com. (...)
+master IN A 192.168.1.10
+slave IN A 192.168.1.11
+client IN A 192.168.1.12
+
+www IN CNAME master
+```
+
+## 📋 Types d'enregistrements DNS
+
+Un enregistrement DNS est une instruction stockée sur un serveur DNS, dans un fichier de zone. Ces enregistrements fournissent des informations importantes sur les domaines et les noms d'hôte. Ces listes aident les serveurs DNS à envoyer les requêtes au bon endroit.
+
+Chaque type d'enregistrement DNS a un rôle spécifique.
+
+### 1. Enregistrement A (Address Record)
+
+Convertir un nom de domaine en adresse IPv4 (32 bits). C'est l'enregistrement le plus fondamental.
+
+**Syntaxe**
+
+```text
+nom. TTL IN A IPv4_address
+```
+
+**Exemples**
+
+```bash
+# Exemple simple
+google.com. 300 IN A 142.250.178.46
+
+# Plusieurs noms vers la même IP
+example.com. 3600 IN A 192.168.1.10
+www.example.com 3600 IN A 192.168.1.10
+mail.examle.com 3600 IN A 192.168.1.10
+
+# Plusieurs IP pour le même nom (Round-robin)
+google.com. 300 IN A 142.250.178.46
+google.com. 300 IN A 142.250.178.47
+google.com. 300 IN A 142.250.178.48
+```
+### 2. Enregistrement AAAA (Quad-A Record)
+
+Convertit un nom de domaine en adresse IPv6 (128 bits).
+
+**Syntaxe**
+
+```text nom. TTL AAAA IPv6_address```
+
+**Exemples**
+
+```bash
+google.com. 300 IN AAAA 2a00:1450:810:200e
+ipv6.google.com. 3600 AAAA 2001:4860:4860::8888
+```
+
+**Utilisation**
+
+```bash
+# Vérifier si un site supporte IPv6
+dig AAAA google.com
+```
+
+### 3. Enregistrement CNAME (Canonical Name)
+
+Crée un alias vers un autre domaine. Le nom canonique (officiel) reçoit les requêtes.
+
+Un CNAME ne peut pas coexister avec d'autres enregistrements pour le même nom.
+
+**Syntaxe**
+
+```text alias. TTL IN CNAME canonical_name```
+
+**Exemple**
+
+```bash
+# Alias courants
+www.example.com. 3600 IN CNAME example.com.
+ftp.example.com. 3600 IN CNAME example.com.
+blog.example.com. 3600 IN CNAME example.com.
+
+# Chaîne de CNAME
+short.example.com. IN CNAME tiny.example.com
+tiny.example.com. IN CNAME example.com
+```
+
+**Dans le projet**
+
+```bash
+# Si on veut que wwww pointe vers master :
+www.tp.local. 86400 IN CNAME master.tp.local.
+
+# Pour un service web
+web.tp.local. 86400 IN CNAME master.tp.local.
+```
+
+### 4. Enregistrement MX (Mail Exchange)
+
+Indique les serveurs de messagerie qui acceptent les emails pour le domaine.
+
+- Plus le nombre est petit, plus la priorité est haute
+- Le serveur avec la plus petite priorité est contacté en premier
+
+**Syntaxe**
+
+```text domaine. TTL IN MX priority mail_server```
+
+**Exemples**
+
+```bash
+# Configuration typique
+
+example.com. 3600 IN MX 10 mail1.example.com
+example.com. 3600 IN MX 20 mail2.example.com
+example.com. 3600 IN MX 30 mail3.example.com
+
+# Google workspace (ex G Suite)
+example.com.    3600    IN  MX  10  aspmx.l.google.com.
+example.com.    3600    IN  MX  20  alt1.aspmx.l.google.com
+example.com.    3600    IN  MX  20  alt2.aspmx.l.google.com.
+example.com.    3600    IN  MX  30  alt3.aspmx.l.google.com.
+example.com.    3600    IN  MX  30  alt4.aspmx.l.google.com.
+```
+
+**Dans le projet**
+
+```bash
+tp.local.       86400   IN  MX  10  mail.tp.local.
+mail.tp.local.  86400   IN  A   10.237.80.115
+```
+
+### 5. Enregistrement NS (Name Server)
+
+Déclare les serveurs DNS faisant autorité pour un domaine. C'est l'enregistrement qui permet la délégation.
+
+**Syntaxe**
+
+```text domaine. TTL NS dns_server```
+
+**Exemples**
+
+```bash
+# Pour un domaine avec plusieurs serveurs DNS
+example.com. 172800 IN NS ns1.example.com.
+example.com. 172800 IN NS ns2.example.com.
+example.com. 172800 IN NS ns3.example.com.
+
+# Pour un sous-domaine délégué
+sub.example.com. 172800 IN NS ns1.sub.example.com
+sub.example.com. 172800 IN NS ns2.sub.example.com
+
+# Dans le projet
+tp.local. 86400 IN NS master.tp.local.
+tp.local. 86400 IN NS master.tp.local.
+```
+### 6. Enregistrement PTR (Pointer)
+
+Réalise la résolution inverse : convertit une adresse IP en nom de domaine. Utilisé pour la vérification (anti-spam, authentification).
+
+Les enregistrements PTR sont dans des domaines spéciaux : 
+- IPv4 : in-addr-arpa.
+- IPv6 : ip6.rpa.
+
+**Syntaxe**
+
+```text ip_reverse.in-addr.arpa. TTL IN PTR nom.```
+
+**Exemples**
+
+```bash
+# Pour l'IP 192.168.1.10
+192.168.1.10.in-addr.arpa. 3600 IN PTR example.com
+
+# Pour l'IP 8.8.8.8 (Google DNS)
+8.8.8.8.in-addr.arpa. 86400 IN PTR master.tp.local
+
+# Vérification
+dig -x 8.8.8.8
+nslookup
+```
+
