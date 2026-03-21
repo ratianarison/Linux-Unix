@@ -222,11 +222,11 @@ AuthenticationMethoods pubkey,password
 # Force l'authentification par clés puis mot de passe (double facteur)
 ```
 
-## 💬 Phase 3 : Session chiffré
+**💬 Phase 3 : Session chiffré**
 
-**Objectif :** Échanger des commandes, des données et des fichiers de manière sécurisée et interactive.
+*Objectif :* Échanger des commandes, des données et des fichiers de manière sécurisée et interactive.
 
-**Types de sessions**
+*Types de sessions*
 
 *1. Session Shell interactive*
 
@@ -387,3 +387,217 @@ Last login: Sat Mar 21 10:00:00 2026 from 10.237.80.247
 user@master:~$
 ```
 </details>
+
+### Le chiffrement 
+
+SSH utilise trois types de chiffrement :
+
+```bash
+1. Chiffrement symétrique (session)
+   - AES, Chacha20
+   - Une seule clé pour chiffré/déchiffré
+   - Protège les données échangées
+
+2. Chiffrement asymétrique (authentication)
+   - RSA, ECDSA, Ed25519
+   - Paire clé publique + clé privée
+   - Authentifie le client et le serveur
+
+3. Échange de clés (key exchange)
+   - Diffie-Hellman, ECDH
+   - Crée la clé de session de façon sécurisée
+```
+
+## 📝 Commandes SSH essentielles 
+
+### Connexion de base 
+
+```bash
+# Connexion simple
+ssh user@server
+
+# Avec port spécifique
+ssh -p 2222 user@server
+
+# Exécuter une commande unique
+ssh user@server "ls -la /home"
+
+# Connexion avec nom d'utilisateur local identique
+ssh serveur
+```
+
+### Transfert de fichiers
+
+```bash
+# Copie sécurisée (SCP)
+scp fichier.txt user@server:/chemin
+scp user@server:/chemin/fichier.txt ./
+
+# SFTP (interactif)
+sftp user@server
+# puis get, put, ls, cd, etc.
+
+# Rsync via SSH (efficace pour synchronisations)
+rsync -avz -e ssh ./dossier/ user@server:/chemin/
+```
+
+### Tunnels et redirections
+
+```bash
+# Tunnel local (forward)
+ssh -L 8080:localhost:80 user@server
+# Accéder à http://localhost:8080 = http://serveur:80
+
+# Tunnel distant (reverse)
+ssh -R 8080:localhost:80 user@server
+
+# Tunnel SOKCS (proxy)
+ssh -D 1080 user@server
+```
+
+### Fichiers d'authentification
+
+```bash
+# Clés sur le client
+~/.ssh/id_rsa   # clé privée (ne jamais partager)
+~/ssh/id_rsa.pub   # clé publique
+
+# Clés autorisées sur le serveur
+~/.ssh/authorized_keys
+```
+
+### Bonnes pratiques 
+
+```bash
+# Protéger la clé privée
+chmod 600 ~/.ssh/id_rsa
+
+# Protéger le répertoire .ssh
+chmod 700 ~/.ssh
+
+# Utiliser une phrase de passe (passphrase)
+# Stocker la phrase de passe avec ssh-agent
+ssh-add ~/.ssh/id_rsa
+```
+
+## 📂 Fichiers de configuration
+
+### Client : <mark>/etc/ssh/ssh_config</mark> et <mark>~/.ssh/config</mark>
+
+**/etc/ssh/ssh_config**
+
+/etc/ssh/ssh_config configure le comportement du client SSH <mark>ssh</mark>, contrairement à /etc/ssh/sshd_config qui configure le serveur.
+
+Il définit comment le client SSH se comporte par défaut :
+   - Quels algorithmes utiliser
+   - Quelles clés utiliser
+   - Quels paramètres appliquer
+   - Comment se comporter avec chaque hôte
+
+*Structure du fichier*
+
+```bash
+# Option Valeur
+
+# Section hôte
+Host host_name
+   Option1 valeur2
+   Option2 valeur2
+```
+
+*Configuration de base*
+
+```bash
+# Port par défaut
+Port 22
+
+# Utilisateur par defaut
+User user_name
+
+# Adresse par défaut
+HostName IP_address
+
+# Version du protocole (toujours 2)
+Protocol 2
+```
+
+*Authentification*
+
+```bash
+# Fichiers de clé privées
+IdentityFile ~/.ssh/id_rsa
+IdentityFile ~/.ssh/id_ed25519
+IdentityFile ~/.ssh/id_ecdsa
+
+# Désactiver l'authentification par mot de passe
+PasswordAuthentication no
+
+# Activer l'authentification par clé
+PubkeyAuthentication yes
+
+# Forward de l'agent SSH (pour utiliser les clés sur le serveur)
+ForwardAgent no
+
+# Nombre de tentatives
+NumberOfPasswordPrompts 3
+```
+
+*Chiffrement et Algorithmes*
+
+```bash
+# Algorithmes de chiffrement préférés
+Ciphers aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr
+
+# Algorithmes d'échange de clés
+KexAlgorithms curve25519-sha256,ecdh-sha2-nistp256
+
+# Algorithmes MAC (Message Authentication Code)
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+```
+
+*Compression et performance*
+
+```bash
+# Compression des données
+Compression yes
+CompressionLevel 6
+
+# Timeout de connexion
+ConnectTimeout 30
+
+# Garder la connexion active
+ServerAliveInterval 60
+ServerAliveCountMax 3
+```
+
+*Tunnels et forwarding*
+
+```bash
+# ForwardingX11 (Graphiques)
+ForwardX11 yes
+ForwardX11Trusted yes
+
+# Forwarding d'agent
+ForwardAgent no
+
+# Forwarding de ports
+AllowTcpForwarding yes
+GatewayPorts no
+```
+
+*Vérification et sécurité*
+
+```bash
+# Vérification des clés hôtes
+StrictHostKeyChecking ask
+# Options : yes (toujours), no (jamis), ask (demander)
+
+# Enregistrement des clés hôtes
+UserKnownHostsFile ~/.ssh/known_hosts
+
+# Vérification de la clé hôte (plus stricte)
+CheckHostIP yes
+```
+
+
+
