@@ -207,8 +207,72 @@ SyslogFacility AUTH
 
   ```bash
   # Connexion réussie
-  Accepted password for x from 
+  Accepted password for x from 192.168.1.11 port 54321 ssh2
+
+  # Connexion fermée
+  pam_unix(sshd:session): session closed for user x
+
+  # Démarrage du serveur
+  Server listening on 0.0.0.0 port 22
   ```
+
+  **VERBOSE (Plus de détails)**
+  
+  ```bash
+  # Même logs INFO + Détails supplémentaires
+  Connection from 192.168.1.12 port 54321
+  Failed none for x from 192.168.1.12 port 54321 ssh2
+  Accepted password for x from 192.168.1.12 port 54321 ssh2
+  pam_unix(sshd:auth):authentication failure; logname=uid=0 euid=0 tty=ssh ruser=rhost=192.168.1.12
+  ```
+
+  **DEBUG (Très détaillé - Débogage)**
+
+  ```bash
+  # Logs EXTREMEMENT détaillés, incluant :
+  debug1: KEX: client->server cipher:chacha20-poly1305@openssh.com MAC: <implicit> compression: none
+  debug1: kex: server->client cipher: chacha20-poly1305@openssh.com MAC: <implicit> compression: none
+  debug1: expecting SSH2_MSG_KEX_ECDH_INIT
+  debug1: SSH2_MSG_NEWKEYS sent
+  debug1: SSH2_MSG_NEWKEYS received
+  debug1: rekey after 134217728 blocks
+  debug1: SSH2_MSG_SERVICE_ACCEPT received
+  debug1: Authentications that can continue: publickey,password
+  debug1: Next authentication method: publickey
+  debug1: Trying private key: /root/.ssh/id_rsa
+  debug1: Trying private key: /root/.ssh/id_dsa
+  debug1: Trying private key: /root/.ssh/id_ecdsa
+  debug1: Trying private key: /root/.ssh/id_ed25519
+  debug1: Next authentication method: password
+  ```
+</details>
+
+<details>
+  <summary>SyslogFacility - Destination des logs</summary>
+
+  SyslogFality spécifie la facilité syslog utilisée pour envoyer les messages SSH. C'est comme une catégorie qui permet de séparer les logs dans différents.
+
+  **Facilités disponibles**
+
+  ```bash
+  # Facilités courantes
+  AUTH # Authentification (défaut)
+  AUTHPRIV # Authentification privée (souvant vers /var/log/secure)
+  USER # Logs utilisateur
+  LOCAL0 # Logs locaus personnalisés
+  LOCAL1
+  LOCAL2
+  ...
+  LOCAL7
+  DAEMON # Service système
+  ```
+
+  **Emplacement selon la facilité**
+
+  ```bash
+  # Configuration typique dans /etc/rsyslog.conf
+  # Ou /etc/rsyslog.d/50-default.conf
+  
 </details>
 
 </details>
