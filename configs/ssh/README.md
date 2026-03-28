@@ -739,3 +739,31 @@ Host master m
 | `DynamisForward` | Proxy SOCKS | `DynamicForward 1080` |
 
 
+*Structure des fichiers*
+
+```bash
+~/.ssh/
+├── config           # Fichier de configuration (600)
+├── id_ed25519       # Clé privée (600)
+├── id_ed25519.pub   # Clé publique (644)
+├── known_hosts      # Empreintes des serveurs (644)
+└── authorized_keys  # Clés autorisées sur le serveur (600)
+```
+
+*Permissions strictes*
+
+```bash
+# Répertoire .ssh
+chmod 700 ~/.ssh       # rwx------
+
+# Fichier config
+chmod 600 ~/.ssh/config   # rw-------
+
+# Clé privée
+chmod 600 ~/.ssh/id_ed25519   # rw-------
+
+# Autres fichiers
+chmod 644 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/known_hosts
+```
+
