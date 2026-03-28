@@ -709,3 +709,33 @@ Host master m
 | `IdentitiesOnly` | Utiliser uniquement les clés spécifiées | `IdetitiesOnly yes` |
 | `PaswordAuthentication` | Autoriser mot de passe | `PasswordAuthentication yes` |
 | `PubkeyAuthentication` | Autoriser clé publique | `PubkeyAuthentication yes` |
+
+`Connexion et Réseau`
+
+| Option | Description | Exemple |
+|--------|-------------|---------|
+| `Hostname` | Adresse réelle du serveur | `Hostname ip_address` |
+| `ConnectTimeout` | Délai de connexion (secondes) | `ConnectTimeout 30` |
+| `ServerAliveInterval` | Keepalive (secondes) | `ServerAliveInterval 30` |
+| `ServerAliveCountMax` | Nombre de keepalive | `ServerAliveCountMax 3` |
+| `Compression` | Compression des données | `Compression yes` |
+| `CompressionLevel` | Niveau de compression (1-9) | `CompressionLevel 6` |
+
+`Sécurité`
+
+| Option | Description | Exemple |
+|--------|-------------|---------|
+| `StrictHostKeyChecking` | Vérification des clés hôtes | `StrictHostKeyChecking ask` |
+| `UserKnownHostsFile` | Fichier des clés hôtes | `UserKnownHostsFile ~/.ssh/known_hosts` |
+| `ForwardAgent` | Forward de l'agent SSH | `ForwardAgent no` |
+| `ForwardX11` | Forward X11 | `ForwardX11 yes` |
+
+`Tunnels`
+
+| Option | Description | Exemple |
+|--------|-------------|---------|
+| `LocalForward` | Tunnel Local | `LocalForward 8080 localhost:80` |
+| `RemoteForward` | Tunnel Distant | `RemoteForward 2222 localhost:22` |
+| `DynamisForward` | Proxy SOCKS | `DynamicForward 1080` |
+
+
