@@ -495,7 +495,10 @@ Il définit comment le client SSH se comporte par défaut :
    - Comment se comporter avec chaque hôte
 
 *Structure du fichier*
+<details>
 
+<summary>/etc/ssh/sshd_config</summary>
+   
 ```bash
 # Option Valeur
 
@@ -598,6 +601,111 @@ UserKnownHostsFile ~/.ssh/known_hosts
 # Vérification de la clé hôte (plus stricte)
 CheckHostIP yes
 ```
+</details>
 
 
+**~/.ssh/config**
 
+Le fichier ~/.ssh/config est un fichier de configuration utilisateur qui permet de personnaliser le comportement du client SSH (ssh, scp, sftp) pour chaque connexion. C'est un outil indispensable pour gagner en productivité et uniformiser les paramètres de connexion.
+
+*Avantages* : 
+
+   - Alias courts : `ssh master` au lieu de `ssh user@ip_address -p 2222 -i ~/.ssh/my_key`
+   - Centralisation : tous les paramètres de connexion sont regroupés
+   - Standardisation :  mêmes les options pour toutes les connexions
+   - Productivité : Centralisation des paramètres de sécurité.
+
+*Syntaxe de base* : 
+
+```bash
+Host [alias1]
+   Option1 valeur1
+   Option2 valeur2
+   Option3 valeur3
+
+Host [alias2]
+   Option1 valeur1
+   Option2 valeur2
+   Option3 valeur3
+```
+
+*Règles* : 
+
+   - Les sections `Host` sont séparées
+   - Les options sont indéntées (espaces ou tabulations)
+   - L'ordre est important : la première section correspondante est appliquée
+   - Les alias sont insensibles à la case
+
+*Structure d'une section Host*
+
+```bash
+Host master                            # Alias pour master.tp.local
+   Hostname [ip_address]               # Adresse réelle du serveur 
+   User [username]                     # Nom d'utilisateur de connexion
+   Port 22                             # Port SSH du serveur
+   IndetityFile ~/.ssh/id_ed25519      # Clé privé à utiliser
+   Compression yes                     # Compression des données
+   ServerAliveInterval 60              # Keepalive toutes les 60 secondes
+```
+
+*Les patterns Host*
+
+`Pattern exact`
+
+```bash
+# Un seul Host
+Host master
+   Hostname ip_address
+```
+
+`Pattern avec wildcard *`
+
+```bash
+# Tous les hôtes du domaine .tp.local
+Host *.tp.local
+   User x
+   IdentityFile ~/.ssh/id_ed25519
+
+# Tous les hôtes commençant par "web"
+Host web*
+   User www
+   Port 2222
+```
+
+`Pattern avec "?"`
+
+```bash
+# Correspond à server1, server2, server3
+Host server?
+   User admin
+```
+
+`Pattern d'exclusion avec "!"`
+
+```bash
+# Tous sauf le serveur de production
+Host *.tp.local !prod.tp.local
+   User x
+```
+
+`Pattern multiple`
+
+```bash
+# Plusieurs alia pour la même configuration
+Host master m
+   Hostname ip_address
+   user username
+```
+
+*Options les plus courantes*
+
+`Authentification `
+
+| Option | Description | Exemple |
+|--------|-------------|---------|
+| `user` | Username | `User x` |
+| `Port` | Port SSH | `Port 22` |
+| `IdentityFile` | Clé privée | `IdentityFile ~/.ssh/id_ed25519` |
+| `IdentitiesOnly` | Utiliser uniquement les clés spécifiées | `IdetitiesOnly yes` |
+| `PaswordAuthentication` | Autoriser mot de passe | `PasswordAuthentication yes` |
+| `PubkeyAuthentication` | Autoriser clé publique | `PubkeyAuthentication yes` |
