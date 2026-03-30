@@ -126,7 +126,7 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 # Ou version plus sécurisée
 Subsystem sftp internal-sftp
 # moins de dépendances système et plu sécurisé
-
+```
 
 ## Configuration des clients
 
@@ -144,4 +144,124 @@ Host *
   LogLevel INFO              # niveau de log côté client
 ```
 
+### Configuration utilisateur : ~/.ssh/config
+
+Chaque utilisateur peut avoir un fichier .ssh/config pour simplifier et sécuriser ses connexions.
+
+```bash
+sudo nano ~/.ssh/config
+```
+
+```bash
+Host client                  # raccourci pour un serveur spécifique
+      Hostname 10.141.153.249
+      User admin
+      Port 2222
+      IndentityFile ~/.ssh/id_rsa
+      ForwardAgent yes
+      ServerAliveIntervalt 60
+      ServerAliveCountMax 3
+
+Host master
+      Hostname 10.141.153.245
+      User user1
+      Port 22
+      IdentityFiles ~/.ssh/id_ed25519
+      ForwardX11 no
+      ProxyJump client            # connexion via un jump host (server intérmédiaire)
+
+Host *
+      ForwardAgent no
+      ForwardX11 no
+      StrictHostKeyChecking ask
+      LogLevel VERBOSE
+```
+
+### Gestion des clés côté client
+
+**Structure des fichiers SSH côté client**
+
+Toutes les clés et configurations se trouvent dans : ~/.ssh
+
+Structure typique !
+
+```bash
+~/.ssh
+ ├── id_rsa      # clé privée RSA
+ ├── id_rsa.pub      # clé publique RSA
+ ├── id_ed25519      # clé privée moderne
+ ├── id_ed25519.pub      # clé publique
+ ├── config            # configuration SSH utilisateur
+ ├── known_hosts      # liste des serveurs connus
+ ├── authorized_keys (rare côté client)      # utilisé côté serveur
+ └── controlmasters
+```
+
+Permissions recommandées :
+
+```bash
+chmod 700 ~/.ssh      # rwx------
+chmod 600 ~/.ssh/id_*      # rw-------
+chmod 644 ~/.ssh/*.pub      # rw-r--r--
+```
+
+**Génération de clés SSH**
+
+```bash
+ssh-keygen
+# Pardéfaut : ~/.ssh/id_rsa
+
+# Génération RSA (compatible)
+ssh-keygen -t rsa -b 4096 -C "user1@client"
+
+# Options :
+      # -t : type de clé
+      # -b : taille
+      # -C : commentaire
+
+# Génération Ed25519 (recommandé)
+ssh-keygen -t ed25519 -C "user2 access"
+# Fichiers générés : id_ed25519 et id_ed25519.pub
+
+# Copier la clé vers un serveur
+ssh-copy-id z@client
+```
+
+**Gestion multi-clés**
+
+On peut gérer plusieurs  serveurs avec différents clés
+
+```text
+~/.ssh
+ ├── id_rsa_github
+ ├── id_rsa_web
+ ├── id_rsa_lab
+```
+
+`Configurer dans ~/.ssh/config`
+
+```bash
+Host github
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa_github
+
+Host prod
+    HostName 192.168.56.20
+    User admin
+    IdentityFile ~/.ssh/id_rsa_prod
+
+Host lab
+    HostName 192.168.56.30
+    User student
+    IdentityFile ~/.ssh/id_rsa_lab
+```
+
+`Connexion` :
+
+```bash
+ssh github
+ssh prod
+ssh web
+```
 
