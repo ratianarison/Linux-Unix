@@ -97,3 +97,72 @@ ssh guest@server
 ssh user3@server
 # refusé car user3 n'a pas de mot de passe
 ```
+
+---
+
+# Scénario 2 : Authentification SSH par clé publique
+
+## Contexte 
+
+L'entreprise héberge des scripts d'administration et des fichiers sensibles.
+
+Pour améliorer la sécurité, l'adminitrateur décide de : 
+
+- désactiver l'authentification par mot de passe
+- utiliser l'authentification par clé publique SSH
+- autoriser uniquement certains utilisateurs.
+
+Les connexions SSH se font depuis une machine utilisée par les administrateurs.
+
+## Génération des clés sur le client 
+
+Sur la machine de l'administrateur :
+
+```bash
+ssh-keygen -t ed25519 -C "admin@server"
+# ED25519 est plus moderne que RSA
+# Résultat :
+#        ~/.ssh/id_ed25519
+#        ~/.ssh/id_ed25519.pub
+# La clé privée ne doit jamais être partagée
+```
+
+## Copie de la clé publique vers le serveur
+
+```bash
+ssh-copy-id admin@server
+# La clé sera ajoutée dans : /home/admin/.ssh/authorized_keys
+```
+**Structure des clés sur le serveur**
+
+Dans le compte utilisateur : 
+
+```text
+/home/admin/
+        │
+        └── .ssh
+             │
+             └── authorized_keys
+```
+
+Exemple de contenu : 
+
+```text ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA... admin@server```
+
+## Configuration SSH du serveur : fichier /etc/ssh/sshd_config
+
+```bash
+PubkeyAuthentication yes
+PasswordAuthentication yes
+PermitEmptyPassword no
+StrictModes yes
+AllowUsers admin user1 user2 user3
+DenyUsers guest test
+```
+
+**Redémarrer SSH**
+
+```bash
+sudo systemctl restart ssh
+sudo systemctl restart sshd
+```
