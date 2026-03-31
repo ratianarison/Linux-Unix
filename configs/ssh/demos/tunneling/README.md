@@ -1,4 +1,4 @@
-# Scénario 4 : Accès sécurisé aux services internes via SSH Tunneling
+# Accès sécurisé aux services internes via SSH Tunneling
 
 ## Contexte 
 
