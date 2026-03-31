@@ -153,15 +153,21 @@ Envoyer un fichier :
 
 Télécharger : 
 
-```bash get document.txt```
+```bash 
+get document.txt
+```
 
 Lister :
 
-```bash ls```
+```bash 
+ls
+```
 
 ## Exemple de transfert SCP administrateur 
 
 Envoyer un projet : 
 
-```bash scp -r projet admin@server:/serv/backups```
+```bash 
+scp -r projet admin@server:/serv/backups
+```
 
